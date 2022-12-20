@@ -642,6 +642,40 @@ pre_process_line (line, print_changes, addit)
     return_value = savestring (line);
 #endif
 
+  // JE each command gets a jrun prefix. The rest is escaped.
+  if (return_value) {
+      const char *prefix = "jrun '";
+      const char *suffix = "'";
+      int extra=0;
+      for (int i=0; i<strlen(return_value); i++)
+        if (return_value[i]=='\'')
+            extra+=3;
+      char *buf = (char *)malloc(strlen(return_value)+strlen(prefix)+strlen(suffix)+extra+1);
+      strcpy(buf,prefix);
+
+      char *s = return_value;
+      char *d = buf + strlen(buf);
+
+      // replace ' with '\''
+      while (*s)
+      {
+        if (*s == '\'') {
+            *d++ = *s++;
+            *d++ = '\\';
+            *d++ = '\'';
+            *d++ = '\'';
+        } else
+            *d++ = *s++;
+      }
+      *d = 0;
+
+      strcat(buf,suffix);
+      // TODO fix mem leak here.
+      //free(return_value);
+      return_value = buf;
+  }
+
+
   return (return_value);
 }
 
